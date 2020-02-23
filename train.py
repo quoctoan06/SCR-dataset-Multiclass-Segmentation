@@ -114,6 +114,7 @@ def _main_(args):
     # Build model
     inp_shape = X_train[0].shape    # (256, 256, 1)
     UNet = build_UNet2D(inp_shape)
+    UNet.summary()
     UNet.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     # Visualize model
