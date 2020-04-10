@@ -2,7 +2,7 @@ from model.unet_model import  *
 from data_preprocess import *
 
 import keras
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, ReduceLROnPlateau
 from keras.optimizers import *
 from keras import backend as K
 import matplotlib.pyplot as plt
@@ -75,17 +75,22 @@ if __name__ == '__main__':
     valid_data = dp.validGenerator(batch_size=8)
 
     model = unet(num_class=num_classes)
+    reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.75,
+                                  patience=15, min_lr=1e-6, verbose=1)
     model.compile(optimizer=Adam(lr=1e-4), loss='categorical_crossentropy', metrics=["accuracy", mean_iou])
     # model.summary()
 
     tb_cb = TensorBoard(log_dir=log_filepath)
-    model_checkpoint = keras.callbacks.ModelCheckpoint('SCR_model_unet_150_epochs.hdf5', monitor='val_acc', verbose=1, save_best_only=True)
+    model_checkpoint = keras.callbacks.ModelCheckpoint('SCR_model_unet_50_epochs.hdf5',
+                                                       monitor='val_accuracy',
+                                                       verbose=1,
+                                                       save_best_only=True)
     history = model.fit_generator(train_data,
-                                  steps_per_epoch=28,
-                                  epochs=150,
-                                  validation_steps=10,
+                                  steps_per_epoch=75,
+                                  epochs=50,
+                                  validation_steps=3,
                                   validation_data=valid_data,
-                                  callbacks=[model_checkpoint, tb_cb])
+                                  callbacks=[model_checkpoint, tb_cb, reduce_lr])
 
     # draw the loss and accuracy curve
     plt.figure(12, figsize=(12, 12), dpi=60)
@@ -97,8 +102,8 @@ if __name__ == '__main__':
     plt.legend()
 
     plt.subplot(312)
-    plt.plot(history.history['acc'], label='train_acc')
-    plt.plot(history.history['val_acc'], label='val_acc')
+    plt.plot(history.history['accuracy'], label='train_acc')
+    plt.plot(history.history['val_accuracy'], label='val_acc')
     plt.subplots_adjust(top=0.9, bottom=0.1)
     plt.title('Accuracy')
     plt.legend()

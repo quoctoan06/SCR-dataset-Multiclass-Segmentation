@@ -69,11 +69,13 @@ if __name__ == '__main__':
     dp = DataPreprocess(test_path=test_image_path, save_path=save_path, flag_multi_class=True, num_classes=6)
 
     # load model
-    model = load_model('SCR_model_unet_150_epochs.hdf5', custom_objects={'mean_iou': mean_iou})
+    model = load_model('SCR_model_unet_50_epochs.hdf5', custom_objects={'mean_iou': mean_iou})
 
     # predict and save prediction
     y_pred_array = []
-    for name in os.listdir(test_image_path):
+    test_image = os.listdir(test_image_path)
+    test_image.sort()
+    for name in test_image:
         image_path = os.path.join(test_image_path, name)
         img, img_size = image_normalized(image_path)
         img = np.expand_dims(img, axis=-1)
@@ -83,9 +85,13 @@ if __name__ == '__main__':
         dp.saveTestResult([prediction[0]], img_size, name.split('.')[0])
         print("Save prediction for image %s" % name)
 
+    print()
+
     # preprocess label
     y_true_array = []
-    for label_name in os.listdir(test_label_path):
+    test_label = os.listdir(test_label_path)
+    test_label.sort()
+    for label_name in test_label:
         label_path = os.path.join(test_label_path, label_name)
         label = cv2.imread(label_path, 0)
         label = cv2.resize(label, (256, 256), interpolation=cv2.INTER_CUBIC)
@@ -94,6 +100,7 @@ if __name__ == '__main__':
             new_label[label == i, i] = 1
         label = new_label
         y_true_array.append(label)
+        print("Preprocess label %s" % label_name)
 
     # calculate Mean IoU for each label over test set
     label_dict = {"left_lung": 1, 'right_lung': 2, 'left_clavicle': 3, 'right_clavicle': 4, 'heart': 5}

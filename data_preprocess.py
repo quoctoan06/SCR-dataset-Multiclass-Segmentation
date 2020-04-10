@@ -94,6 +94,7 @@ class DataPreprocess:
             batch_size=batch_size,
             save_to_dir=save_to_dir,
             save_prefix=image_save_prefix,
+            shuffle=True,
             seed=seed)
         label_generator = label_datagen.flow_from_directory(
             self.train_path,
@@ -104,7 +105,13 @@ class DataPreprocess:
             batch_size=batch_size,
             save_to_dir=save_to_dir,
             save_prefix=label_save_prefix,
+            shuffle=True,
             seed=seed)
+
+        # for i in image_generator:
+        #     idx = (image_generator.batch_index - 1) * image_generator.batch_size
+        #     print(image_generator.filenames[idx: idx + image_generator.batch_size])
+        #     print(label_generator.filenames[idx: idx + label_generator.batch_size])
 
         train_generator = zip(image_generator, label_generator)
         for (img, label) in train_generator:
@@ -121,6 +128,7 @@ class DataPreprocess:
             color_mode=self.image_color_mode,
             target_size=self.target_size,
             batch_size=batch_size,
+            shuffle=True,
             seed=seed)
         label_generator = label_datagen.flow_from_directory(
             self.valid_path,
@@ -129,6 +137,7 @@ class DataPreprocess:
             color_mode=self.label_color_mode,
             target_size=self.target_size,
             batch_size=batch_size,
+            shuffle=True,
             seed=seed)
 
         valid_generator = zip(image_generator, label_generator)
